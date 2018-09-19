@@ -3,7 +3,6 @@ package main;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Properties;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -12,31 +11,30 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-// TODO Class comment
 // TODO Timer between windows and L press
-// TODO Force computer no sleep or readme note
+// TODO Force computer no sleep/readme.txt note
 // TODO Carrier support other than ATT
 // TODO Location services/laptop large sound playing
-// TODO SQL Database
+// TODO SQL database
 
 /**
- * @author Kevin Te
+ * MainAlarm allows a user to lock their computer to a location upon lock and
+ * be notified via SMS text if their computer changes state.
  *
+ * @author Kevin Te
  */
 public class MainAlarm extends JFrame implements KeyListener {
-    // This number is sent a text if laptop changes state
-    // private static final long CONTACT_PHONE_NUMBER = 5098991671L;
+    private static final long serialVersionUID = 1L;
 
     // Destination and sender, respectively
     private static final String CONTACT_EMAIL = "5098991671@txt.att.net";
     private static final String EMAIL_SERVER = "uberfun1997@gmail.com";
-    // TODO remove password before push
-    private static final String SERVER_PASSWORD = "";
+    private static final String SERVER_PASSWORD = ""; // Omitted
 
-    // These messages sent when computer locks or alarm is activated
+    // These customizable messages are sent when computer locks or alarm is
+    // activated respectively
     private static final String VERIFY_MESSAGE = "Laptop locked.";
     private static final String ALARM_TEXT =
             "Alert: Laptop moved from location.";
@@ -51,18 +49,20 @@ public class MainAlarm extends JFrame implements KeyListener {
      * verify text if so. After laptop has been locked, if laptop changes
      * state, an alarm text is sent.
      *
-     * TODO: Button integration?
-     *
      * @param args - command line arguments, unused
      */
     public static void main(String[] args) {
-        new MainAlarm("Key listener");
+        new MainAlarm();       // Instantiate key listener
+        Kernel32.SYSTEM_POWER_STATUS batteryStatus =
+                new Kernel32.SYSTEM_POWER_STATUS();
+        Kernel32.INSTANCE.GetSystemPowerStatus(batteryStatus);
+
         while (true) {         // Detect whether laptop has been locked
             if (isWindowsLocked()) {
-                // sendText(VERIFY_MESSAGE); // TODO Removed for execution
+                sendText(VERIFY_MESSAGE);
                 while (true) { // Laptop has changed to unsafe state
-                    if (hasChangedState()) {
-                        // sendText(ALARM_TEXT); // TODO Removed for execution
+                    if (hasChangedState(batteryStatus)) {
+                        sendText(ALARM_TEXT);
                         break; // Continue to check if windows is locked again
                     }
                 }
@@ -73,7 +73,7 @@ public class MainAlarm extends JFrame implements KeyListener {
     /**
      * Checks and returns if Windows is locked.
      *
-     * @return true Windows operating system is in a locked state, otherwise
+     * @return true if Windows operating system is in a locked state, otherwise
      *         false
      */
     private static boolean isWindowsLocked() {
@@ -82,12 +82,13 @@ public class MainAlarm extends JFrame implements KeyListener {
 
     /**
      * Checks and returns if laptop has changed state, specifically that the
-     * laptop adapter has been unplugged.
+     * laptop adapter has been unplugged. Returns false if laptop is unplugged.
      *
      * @return if laptop is in an unsafe state
      */
-    private static boolean hasChangedState() {
-        return true; // TODO true for testing only
+    private static boolean
+            hasChangedState(Kernel32.SYSTEM_POWER_STATUS batteryStatus) {
+        return batteryStatus.getACLineStatusString().equals("Offline");
     }
 
     /**
@@ -96,12 +97,14 @@ public class MainAlarm extends JFrame implements KeyListener {
      * @param emailBody - actual message in body of email
      */
     private static void sendText(String emailBody) {
-        Properties properties = new Properties(); // Start TLS, store port/POP
+        // Start TLS, store port/POP
+        Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.host", "smtp.gmail.com");
         properties.put("mail.smtp.port", "587");
 
+        // Create a session and authenticate password
         Session session = Session.getInstance(properties,
             new javax.mail.Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -110,7 +113,7 @@ public class MainAlarm extends JFrame implements KeyListener {
             }
         );
 
-        try {
+        try { // Send text message
             Message message = new MimeMessage(session); // Wrapper message
             message.setFrom(new InternetAddress(EMAIL_SERVER)); // From
             message.setRecipients(Message.RecipientType.TO,     // To
@@ -129,14 +132,17 @@ public class MainAlarm extends JFrame implements KeyListener {
     }
 
     /**
+     * MainAlarm constructs a small listener GUI that checks for certain
+     * keyboard keys being pressed.
+     *
      * @author COD3BOY, Kevin Te
      */
-    public MainAlarm(String s) {
+    public MainAlarm() {
         super();
         JPanel p = new JPanel(); // GUI object
         add(p);                  // Add GUI to container
         addKeyListener(this);
-        setSize(200, 100);       // GUI size
+        setSize(10, 10);         // GUI size
         setVisible(true);        // GUI visibility
     }
 
