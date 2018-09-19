@@ -8,5 +8,5 @@ Requirements:
 
 Upon change in state (ex. disconnection from AC power), your laptop sends you a text to alert you that it has been confiscated.
 
-![Example of Text 1](Github 0.png)
-![Example of Text 2](Github 1.png)
+![Example of Text 1](LaptopAlarm/Github 0.png)
+![Example of Text 2](LaptopAlarm/Github 0.png)
