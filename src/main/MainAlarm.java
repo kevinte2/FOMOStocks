@@ -15,11 +15,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+// TODO Class comment
+// TODO Timer between windows and L press
 // TODO Force computer no sleep or readme note
 // TODO Carrier support other than ATT
 // TODO Location services/laptop large sound playing
 // TODO SQL Database
-// TODO Need to handle lock case NOW
 
 /**
  * @author Kevin Te
@@ -32,12 +33,18 @@ public class MainAlarm extends JFrame implements KeyListener {
     // Destination and sender, respectively
     private static final String CONTACT_EMAIL = "5098991671@txt.att.net";
     private static final String EMAIL_SERVER = "uberfun1997@gmail.com";
-    private static final String SERVER_PASSWORD = ""; // TODO remove before push
+    // TODO remove password before push
+    private static final String SERVER_PASSWORD = "";
 
     // These messages sent when computer locks or alarm is activated
     private static final String VERIFY_MESSAGE = "Laptop locked.";
     private static final String ALARM_TEXT =
             "Alert: Laptop moved from location.";
+
+    // True if windows key or "L" key are pressed at least once after startup
+    // of program, respectively
+    private static boolean windowsKeyPressed = false;
+    private static boolean charLPressed = false;
 
     /**
      * Checks whether or not laptop has been locked continually, and sends a
@@ -46,16 +53,16 @@ public class MainAlarm extends JFrame implements KeyListener {
      *
      * TODO: Button integration?
      *
-     * @param args command line arguments, unused
+     * @param args - command line arguments, unused
      */
     public static void main(String[] args) {
-        new MainAlarm("Key Listener Tester");
+        new MainAlarm("Key listener");
         while (true) {         // Detect whether laptop has been locked
             if (isWindowsLocked()) {
-                // sendText(VERIFY_MESSAGE);
+                // sendText(VERIFY_MESSAGE); // TODO Removed for execution
                 while (true) { // Laptop has changed to unsafe state
                     if (hasChangedState()) {
-                        // sendText(ALARM_TEXT);
+                        // sendText(ALARM_TEXT); // TODO Removed for execution
                         break; // Continue to check if windows is locked again
                     }
                 }
@@ -66,7 +73,8 @@ public class MainAlarm extends JFrame implements KeyListener {
     /**
      * Checks and returns if Windows is locked.
      *
-     * @return if Windows operating system is in a locked state
+     * @return true Windows operating system is in a locked state, otherwise
+     *         false
      */
     private static boolean isWindowsLocked() {
         return (windowsKeyPressed && charLPressed);
@@ -85,7 +93,7 @@ public class MainAlarm extends JFrame implements KeyListener {
     /**
      * Sends predefined text to predefined email.
      *
-     * @param emailBody actual message in body of email
+     * @param emailBody - actual message in body of email
      */
     private static void sendText(String emailBody) {
         Properties properties = new Properties(); // Start TLS, store port/POP
@@ -121,39 +129,45 @@ public class MainAlarm extends JFrame implements KeyListener {
     }
 
     /**
-     * @author COD3BOY
+     * @author COD3BOY, Kevin Te
      */
-    private JLabel label;
-    private static boolean windowsKeyPressed;
-    private static boolean charLPressed;
     public MainAlarm(String s) {
         super();
-        JPanel p = new JPanel();
-        label = new JLabel();
-        p.add(label);
-        add(p);
+        JPanel p = new JPanel(); // GUI object
+        add(p);                  // Add GUI to container
         addKeyListener(this);
-        setSize(200, 100);
-        setVisible(true);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-        // Overridden for interface, no usage in program
+        setSize(200, 100);       // GUI size
+        setVisible(true);        // GUI visibility
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_WINDOWS) {
-            windowsKeyPressed = true;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_L) {
-            charLPressed = true;
+        keyPressed(e, KeyEvent.VK_WINDOWS, windowsKeyPressed); // Windows key
+        keyPressed(e, KeyEvent.VK_L, charLPressed);            // L key
+    }
+
+    /**
+     * Flags whether or not keyboard key pressed corresponds to the keyboard
+     * key value.
+     *
+     * @param e - key event for which key has been pressed
+     * @param keyboardKey - value corresponding to keyboard key
+     * @param keyPressed - flag whether or not key is pressed
+     */
+    private void keyPressed(KeyEvent e, int keyboardKey, boolean keyPressed) {
+        if (e.getKeyCode() == keyboardKey) { // Flag for key press
+            keyPressed = true;
+            // System.out.println("Key pressed"); // Debug
         }
     }
 
     @Override
+    public void keyTyped(KeyEvent e) {
+        // throw new NotYetImplementedException(); // Unnecessary for execution
+    }
+
+    @Override
     public void keyReleased(KeyEvent e) {
-        // Overridden for interface, no usage in program
+        // throw new NotYetImplementedException(); // Unnecessary for execution
     }
 }
