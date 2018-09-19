@@ -1,5 +1,7 @@
 package main;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -9,16 +11,21 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-// TODO Force computer no sleep
+// TODO Force computer no sleep or readme note
 // TODO Carrier support other than ATT
 // TODO Location services/laptop large sound playing
+// TODO SQL Database
+// TODO Need to handle lock case NOW
 
 /**
  * @author Kevin Te
  *
  */
-public class MainAlarm {
+public class MainAlarm extends JFrame implements KeyListener {
     // This number is sent a text if laptop changes state
     // private static final long CONTACT_PHONE_NUMBER = 5098991671L;
 
@@ -42,12 +49,13 @@ public class MainAlarm {
      * @param args command line arguments, unused
      */
     public static void main(String[] args) {
+        new MainAlarm("Key Listener Tester");
         while (true) {         // Detect whether laptop has been locked
             if (isWindowsLocked()) {
-                sendText(VERIFY_MESSAGE);
+                // sendText(VERIFY_MESSAGE);
                 while (true) { // Laptop has changed to unsafe state
                     if (hasChangedState()) {
-                        sendText(ALARM_TEXT);
+                        // sendText(ALARM_TEXT);
                         break; // Continue to check if windows is locked again
                     }
                 }
@@ -61,7 +69,7 @@ public class MainAlarm {
      * @return if Windows operating system is in a locked state
      */
     private static boolean isWindowsLocked() {
-        return true; // TODO true for testing only
+        return (windowsKeyPressed && charLPressed);
     }
 
     /**
@@ -110,5 +118,42 @@ public class MainAlarm {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * @author COD3BOY
+     */
+    private JLabel label;
+    private static boolean windowsKeyPressed;
+    private static boolean charLPressed;
+    public MainAlarm(String s) {
+        super();
+        JPanel p = new JPanel();
+        label = new JLabel();
+        p.add(label);
+        add(p);
+        addKeyListener(this);
+        setSize(200, 100);
+        setVisible(true);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Overridden for interface, no usage in program
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_WINDOWS) {
+            windowsKeyPressed = true;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_L) {
+            charLPressed = true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // Overridden for interface, no usage in program
     }
 }
